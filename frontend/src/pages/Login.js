@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Snackbar
 } from '@mui/material';
 import { 
   Login as LoginIcon, 
@@ -27,9 +28,11 @@ import {
 } from '@mui/icons-material';
 import '../styles/AuthStyles.css';
 import logo from '../assets/logo.svg';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -37,12 +40,14 @@ const Login = () => {
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [openModal, setOpenModal] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleClickShowPassword = () => {
@@ -52,32 +57,18 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Simüle edilmiş API çağrısı - gerçek uygulamada backend'e istek atılacak
-      // Burada üye olmayan kullanıcı durumunu simüle ediyoruz
-      if (formData.email !== 'test@test.com') {
-        setOpenModal(true);
-        return;
-      }
-
-      // TODO: Implement actual API call for login
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Store token in localStorage
-        localStorage.setItem('token', data.token);
+      // Burada gerçek bir API çağrısı yapılacak
+      // Şimdilik mock data kullanıyoruz
+      if (formData.email === 'test@test.com' && formData.password === 'test123') {
+        login({ email: formData.email, name: 'Test User' });
         navigate('/');
       } else {
-        setError('Giriş başarısız. Lütfen bilgilerinizi kontrol edin.');
+        setError('Geçersiz e-posta veya şifre');
+        setSnackbarOpen(true);
       }
     } catch (err) {
-      setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+      setError('Giriş yapılırken bir hata oluştu');
+      setSnackbarOpen(true);
     }
   };
 
@@ -87,6 +78,10 @@ const Login = () => {
 
   const handleRegister = () => {
     navigate('/register');
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -187,6 +182,17 @@ const Login = () => {
           </form>
         </Box>
       </Paper>
+
+      <Snackbar 
+        open={snackbarOpen} 
+        autoHideDuration={3000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
 
       {/* Üye olmayan kullanıcılar için modal */}
       <Dialog

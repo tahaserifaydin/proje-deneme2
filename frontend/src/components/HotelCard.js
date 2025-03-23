@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   CardMedia,
@@ -9,189 +9,208 @@ import {
   Button,
   Chip,
   Stack,
-  IconButton,
-  Tooltip,
   Snackbar,
-  Alert
+  Alert,
+  IconButton
 } from '@mui/material';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import HotelDetailModal from './HotelDetailModal';
 import { useNavigate } from 'react-router-dom';
-import dayjs from 'dayjs';
+import { CreditCard } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
-const HotelCard = ({ hotel, onInteraction }) => {
+const HotelCard = ({ hotel }) => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [openSnackbar, setOpenSnackbar] = useState(false);
   const navigate = useNavigate();
-
-  // Sayfa yüklendiğinde favorileri localStorage'dan kontrol et
-  useEffect(() => {
-    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    setIsFavorite(favorites.some(favHotel => favHotel.id === hotel.id));
-  }, [hotel.id]);
+  const { isAuthenticated, isHotelFavorite, toggleFavorite } = useAuth();
 
   const handleOpenDetail = () => {
     setIsDetailModalOpen(true);
-    // Detay görüntüleme etkileşimini izle
-    onInteraction && onInteraction('view_details');
   };
 
   const handleCloseDetail = () => {
     setIsDetailModalOpen(false);
   };
 
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      setOpenSnackbar(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      return;
+    }
+    toggleFavorite(hotel);
+  };
+
   const handleBookingClick = () => {
-    // Rezervasyon etkileşimini izle
-    onInteraction && onInteraction('book_hotel');
-    
-    // Otel detay sayfasına yönlendir
-    navigate(`/hotel/${hotel.id}`, {
+    if (!isAuthenticated) {
+      setOpenSnackbar(true);
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
+      return;
+    }
+    navigate('/booking', {
       state: {
-        checkIn: dayjs().format('YYYY-MM-DD'),
-        checkOut: dayjs().add(1, 'day').format('YYYY-MM-DD'),
-        guests: 2
+        hotelId: hotel.id,
+        hotelName: hotel.name,
+        price: hotel.price,
+        checkIn: hotel.checkIn,
+        checkOut: hotel.checkOut,
+        guests: hotel.guests
       }
     });
   };
 
-  const handleRatingChange = (value) => {
-    // Derecelendirme etkileşimini izle
-    onInteraction && onInteraction('rate_hotel');
+  const handleCloseSnackbar = () => {
+    setOpenSnackbar(false);
   };
 
-  const handleFavoriteToggle = () => {
-    // Favori durumunu değiştir
-    const newFavoriteStatus = !isFavorite;
-    setIsFavorite(newFavoriteStatus);
-    
-    // localStorage'dan mevcut favorileri al
-    const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
-    
-    if (newFavoriteStatus) {
-      // Favorilere ekle
-      const updatedFavorites = [...favorites, hotel];
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-      setSnackbarMessage(`${hotel.name} favorilerinize eklendi`);
-      onInteraction && onInteraction('add_to_favorites');
-    } else {
-      // Favorilerden çıkar
-      const updatedFavorites = favorites.filter(favHotel => favHotel.id !== hotel.id);
-      localStorage.setItem('favorites', JSON.stringify(updatedFavorites));
-      setSnackbarMessage(`${hotel.name} favorilerinizden çıkarıldı`);
-      onInteraction && onInteraction('remove_from_favorites');
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case 'hotel':
+        return 'Otel';
+      case 'villa':
+        return 'Villa';
+      case 'bungalow':
+        return 'Bungalow';
+      case 'treehouse':
+        return 'Treehouse';
+      case 'house':
+        return 'Ev';
+      default:
+        return 'Diğer';
     }
-    
-    setSnackbarOpen(true);
   };
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
+  const getTypeColor = (type) => {
+    switch (type) {
+      case 'hotel':
+        return 'primary';
+      case 'villa':
+        return 'secondary';
+      case 'bungalow':
+        return 'success';
+      case 'treehouse':
+        return 'warning';
+      case 'house':
+        return 'info';
+      default:
+        return 'default';
+    }
   };
 
   return (
-    <>
-      <Card className="hotel-card hotel-detail-card">
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ position: 'relative' }}>
         <CardMedia
           component="img"
-          className="hotel-image"
+          height="200"
           image={hotel.image}
           alt={hotel.name}
-          onClick={() => onInteraction && onInteraction('view_image')}
+          sx={{ cursor: 'pointer' }}
+          onClick={handleOpenDetail}
         />
-        <Box className="hotel-content">
-          <CardContent className="hotel-content-card">
-            <Box className="hotel-header">
-              <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <Typography component="h5" variant="h6">
-                    {hotel.name}
-                  </Typography>
-                  <Tooltip title={isFavorite ? "Favorilerden Çıkar" : "Favorilere Ekle"}>
-                    <IconButton 
-                      onClick={handleFavoriteToggle}
-                      color={isFavorite ? "error" : "default"}
-                      size="small"
-                      sx={{ 
-                        '&:hover': { 
-                          backgroundColor: 'rgba(211, 47, 47, 0.04)' 
-                        } 
-                      }}
-                    >
-                      {isFavorite ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-                    </IconButton>
-                  </Tooltip>
-                </Box>
-                <Box className="hotel-location">
-                  <LocationOnIcon className="location-icon" />
-                  <Typography variant="body2" color="text.secondary">
-                    {hotel.location}
-                  </Typography>
-                </Box>
-                <Rating 
-                  value={hotel.rating} 
-                  readOnly 
-                  size="small" 
-                  className="hotel-rating"
-                  onChange={(event, value) => handleRatingChange(value)}
-                />
-              </Box>
-              <Box className="hotel-price">
-                <Typography variant="h6" color="primary" className="price-text">
-                  ₺{hotel.price}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  gecelik fiyat
-                </Typography>
-              </Box>
-            </Box>
-            <Stack direction="row" spacing={1} className="hotel-amenities">
-              {hotel.amenities.map((amenity, index) => (
-                <Chip 
-                  key={index} 
-                  label={amenity} 
-                  size="small"
-                  className="amenity-chip"
-                  onClick={() => onInteraction && onInteraction('view_amenity')}
-                />
-              ))}
-            </Stack>
-          </CardContent>
-          <Box className="hotel-actions">
-            <Button variant="contained" className="detail-button" onClick={handleOpenDetail}>
-              Detayları Gör
-            </Button>
-            <Button variant="outlined" className="book-button" onClick={handleBookingClick}>
-              Hemen Rezervasyon Yap
-            </Button>
-          </Box>
+        <IconButton
+          sx={{
+            position: 'absolute',
+            top: 8,
+            right: 8,
+            backgroundColor: 'rgba(255, 255, 255, 0.8)',
+            '&:hover': {
+              backgroundColor: 'rgba(255, 255, 255, 0.9)'
+            }
+          }}
+          onClick={handleFavoriteClick}
+          size="small"
+        >
+          {isHotelFavorite(hotel.id) ? <FavoriteIcon color="error" /> : <FavoriteBorderIcon />}
+        </IconButton>
+      </Box>
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
+          <Typography variant="h6" component="h2" gutterBottom>
+            {hotel.name}
+          </Typography>
+          <Chip 
+            label={
+              hotel.type === 'hotel' ? 'Otel' : 
+              hotel.type === 'villa' ? 'Villa' : 
+              hotel.type === 'bungalow' ? 'Bungalow' : 
+              hotel.type === 'treehouse' ? 'Treehouse' : 
+              hotel.type === 'house' ? 'Ev' : 'Diğer'
+            } 
+            color={
+              hotel.type === 'hotel' ? 'primary' : 
+              hotel.type === 'villa' ? 'secondary' : 
+              hotel.type === 'bungalow' ? 'success' : 
+              hotel.type === 'treehouse' ? 'warning' : 
+              hotel.type === 'house' ? 'info' : 'default'
+            } 
+            size="small"
+          />
         </Box>
-      </Card>
-
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+          <LocationOnIcon color="action" fontSize="small" />
+          <Typography variant="body2" color="text.secondary">
+            {hotel.location}
+          </Typography>
+        </Stack>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+          <Rating value={hotel.rating} precision={0.5} readOnly size="small" />
+          <Typography variant="body2" color="text.secondary" sx={{ ml: 1 }}>
+            ({hotel.reviewCount} değerlendirme)
+          </Typography>
+        </Box>
+        <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+          {hotel.roomTypes.map((type, index) => (
+            <Chip 
+              key={index} 
+              label={type} 
+              size="small" 
+              variant="outlined"
+            />
+          ))}
+        </Stack>
+        <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
+          {hotel.amenities.slice(0, 3).map((amenity, index) => (
+            <Chip key={index} label={amenity} size="small" />
+          ))}
+        </Stack>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" color="primary">
+            {hotel.price} ₺ / gece
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleBookingClick}
+            startIcon={<CreditCard />}
+          >
+            Hemen Rezervasyon Yap
+          </Button>
+        </Box>
+      </CardContent>
       <HotelDetailModal
         open={isDetailModalOpen}
         onClose={handleCloseDetail}
         hotel={hotel}
       />
-      
-      <Snackbar 
-        open={snackbarOpen} 
-        autoHideDuration={3000} 
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
       >
-        <Alert 
-          onClose={handleSnackbarClose} 
-          severity={isFavorite ? "success" : "info"} 
-          sx={{ width: '100%' }}
-        >
-          {snackbarMessage}
+        <Alert onClose={handleCloseSnackbar} severity="info">
+          Rezervasyon yapabilmek için lütfen giriş yapın.
         </Alert>
       </Snackbar>
-    </>
+    </Card>
   );
 };
 

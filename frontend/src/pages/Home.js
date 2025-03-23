@@ -1,71 +1,175 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, Box } from '@mui/material';
+import { Container, Typography, Box, TextField, MenuItem, FormControl, InputLabel, Select, Grid } from '@mui/material';
 import SearchBar from '../components/SearchBar';
 import HotelCard from '../components/HotelCard';
-import { syncHotelsWithCursorAI, getRecommendations, trackInteraction } from '../services/cursorAI';
 
 const Home = () => {
-  const [hotels, setHotels] = useState([
+  const [hotels] = useState([
     {
       id: 1,
-      name: 'Grand Luxury Hotel',
-      location: 'İstanbul, Türkiye',
-      rating: 4.5,
-      price: 1250,
+      name: 'Luxury Resort & Spa',
+      type: 'hotel',
+      location: 'Fethiye, Muğla',
+      price: 2500,
+      rating: 4.8,
+      reviewCount: 128,
       image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      amenities: ['WiFi', 'Havuz', 'Spa', 'Restoran']
+      amenities: ['Havuz', 'Spa', 'Restoran', 'Bar', 'Fitness Merkezi', 'Wi-Fi'],
+      roomTypes: ['Standard', 'Deluxe', 'Suite', 'Bungalow']
     },
     {
       id: 2,
-      name: 'Seaside Resort & Spa',
-      location: 'Antalya, Türkiye',
-      rating: 5,
-      price: 2100,
-      image: 'https://images.unsplash.com/photo-1582719508461-905c673771fd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2025&q=80',
-      amenities: ['Özel Plaj', 'Spa', 'Fitness Merkezi', 'Bar']
+      name: 'Mountain Villa Retreat',
+      type: 'villa',
+      location: 'Kalkan, Antalya',
+      price: 3500,
+      rating: 4.9,
+      reviewCount: 85,
+      image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80',
+      amenities: ['Özel Havuz', 'Deniz Manzarası', 'Tam Mutfak', 'Bahçe', 'Wi-Fi'],
+      roomTypes: ['Villa', 'Deluxe Villa', 'Luxury Villa']
     },
     {
       id: 3,
-      name: 'Boutique City Hotel',
-      location: 'İzmir, Türkiye',
-      rating: 4,
-      price: 850,
-      image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
-      amenities: ['Kahvaltı', 'WiFi', 'Otopark']
+      name: 'Beachfront Bungalow Resort',
+      type: 'bungalow',
+      location: 'Kalkan, Antalya',
+      price: 1800,
+      rating: 4.7,
+      reviewCount: 156,
+      image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      amenities: ['Özel Plaj', 'Restoran', 'Bar', 'Spor Alanı', 'Wi-Fi'],
+      roomTypes: ['Standart Bungalow', 'Deniz Manzaralı Bungalow', 'Aile Bungalow']
+    },
+    {
+      id: 4,
+      name: 'Historic Boutique Hotel',
+      type: 'hotel',
+      location: 'Kalkan, Antalya',
+      price: 1200,
+      rating: 4.6,
+      reviewCount: 92,
+      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      amenities: ['Restoran', 'Bar', 'Tarihi Bahçe', 'Wi-Fi'],
+      roomTypes: ['Standard', 'Deluxe', 'Suite']
+    },
+    {
+      id: 5,
+      name: 'Luxury Treehouse Resort',
+      type: 'treehouse',
+      location: 'Fethiye, Muğla',
+      price: 2800,
+      rating: 4.9,
+      reviewCount: 64,
+      image: 'https://images.unsplash.com/photo-1591088398332-8a7791972843?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      amenities: ['Özel Teras', 'Doğa Manzarası', 'Restoran', 'Spa', 'Wi-Fi'],
+      roomTypes: ['Standart Treehouse', 'Deluxe Treehouse', 'Aile Treehouse']
+    },
+    {
+      id: 6,
+      name: 'Seaside Villa Complex',
+      type: 'villa',
+      location: 'Kalkan, Antalya',
+      price: 4200,
+      rating: 4.8,
+      reviewCount: 78,
+      image: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2071&q=80',
+      amenities: ['Özel Havuz', 'Deniz Manzarası', 'Tam Mutfak', 'Bahçe', 'Wi-Fi', 'Spa'],
+      roomTypes: ['Villa', 'Deluxe Villa', 'Luxury Villa', 'Presidential Villa']
+    },
+    {
+      id: 7,
+      name: 'Eco-Friendly Bungalow Resort',
+      type: 'bungalow',
+      location: 'Fethiye, Muğla',
+      price: 1500,
+      rating: 4.7,
+      reviewCount: 112,
+      image: 'https://images.unsplash.com/photo-1582268611958-ebfd161ef9cf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      amenities: ['Organik Bahçe', 'Restoran', 'Yoga Alanı', 'Wi-Fi', 'Bisiklet'],
+      roomTypes: ['Standart Bungalow', 'Deniz Manzaralı Bungalow', 'Aile Bungalow', 'Eco Bungalow']
+    },
+    {
+      id: 8,
+      name: 'Modern Boutique Hotel',
+      type: 'hotel',
+      location: 'Kalkan, Antalya',
+      price: 2000,
+      rating: 4.6,
+      reviewCount: 95,
+      image: 'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      amenities: ['Restoran', 'Bar', 'Fitness Merkezi', 'Wi-Fi', 'Spa'],
+      roomTypes: ['Standard', 'Deluxe', 'Suite', 'Executive Suite']
+    },
+    {
+      id: 9,
+      name: 'Deniz Manzaralı Ev',
+      type: 'house',
+      location: 'Fethiye, Muğla',
+      price: 800,
+      rating: 4.5,
+      reviewCount: 45,
+      image: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      amenities: ['Deniz Manzarası', 'Tam Mutfak', 'Bahçe', 'Wi-Fi', 'Otopark'],
+      roomTypes: ['2+1', '3+1', '4+1']
+    },
+    {
+      id: 10,
+      name: 'Dağ Evi',
+      type: 'house',
+      location: 'Fethiye, Muğla',
+      price: 600,
+      rating: 4.4,
+      reviewCount: 38,
+      image: 'https://images.unsplash.com/photo-1518780664697-55e3ad937233?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80',
+      amenities: ['Doğa Manzarası', 'Tam Mutfak', 'Bahçe', 'Wi-Fi', 'Şömine'],
+      roomTypes: ['1+1', '2+1', '3+1']
     }
   ]);
-
-  const [recommendations, setRecommendations] = useState([]);
+  const [filteredHotels, setFilteredHotels] = useState([]);
+  const [filters, setFilters] = useState({
+    accommodationType: 'all',
+    roomType: 'all',
+    minPrice: '',
+    maxPrice: '',
+    rating: 'all'
+  });
 
   useEffect(() => {
-    // Otel verilerini Cursor.ai ile senkronize et
-    const syncHotels = async () => {
-      try {
-        await syncHotelsWithCursorAI(hotels);
-        // Başlangıç önerilerini al
-        const initialRecommendations = await getRecommendations({});
-        setRecommendations(initialRecommendations);
-      } catch (error) {
-        console.error('Error initializing Cursor.ai:', error);
-      }
-    };
+    let filtered = [...hotels];
 
-    syncHotels();
-  }, [hotels]);
-
-  const handleHotelInteraction = async (hotelId, interactionType) => {
-    try {
-      // Kullanıcı etkileşimini izle
-      await trackInteraction('user123', hotelId, interactionType);
-      
-      // Yeni önerileri al
-      const newRecommendations = await getRecommendations({
-        // Kullanıcı tercihlerine göre parametreler eklenebilir
-      });
-      setRecommendations(newRecommendations);
-    } catch (error) {
-      console.error('Error handling hotel interaction:', error);
+    // Konaklama türüne göre filtreleme
+    if (filters.accommodationType !== 'all') {
+      filtered = filtered.filter(hotel => hotel.type === filters.accommodationType);
     }
+
+    // Oda tipine göre filtreleme
+    if (filters.roomType !== 'all') {
+      filtered = filtered.filter(hotel => hotel.roomTypes.includes(filters.roomType));
+    }
+
+    // Fiyat aralığına göre filtreleme
+    if (filters.minPrice) {
+      filtered = filtered.filter(hotel => hotel.price >= Number(filters.minPrice));
+    }
+    if (filters.maxPrice) {
+      filtered = filtered.filter(hotel => hotel.price <= Number(filters.maxPrice));
+    }
+
+    // Puanlamaya göre filtreleme
+    if (filters.rating !== 'all') {
+      filtered = filtered.filter(hotel => hotel.rating >= Number(filters.rating));
+    }
+
+    setFilteredHotels(filtered);
+  }, [filters, hotels]);
+
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+    setFilters(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
@@ -94,27 +198,88 @@ const Home = () => {
         <SearchBar />
       </Box>
 
-      <Container sx={{ py: 4 }}>
-        <Typography variant="h5" sx={{ mb: 3 }}>
-          Size Özel Öneriler
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h4" component="h1" gutterBottom>
+          Konaklama Seçenekleri
         </Typography>
-        {recommendations.length > 0 ? (
-          recommendations.map((hotel) => (
-            <HotelCard 
-              key={hotel.id} 
-              hotel={hotel}
-              onInteraction={(interactionType) => handleHotelInteraction(hotel.id, interactionType)}
-            />
-          ))
-        ) : (
-          hotels.map((hotel) => (
-            <HotelCard 
-              key={hotel.id} 
-              hotel={hotel}
-              onInteraction={(interactionType) => handleHotelInteraction(hotel.id, interactionType)}
-            />
-          ))
-        )}
+
+        {/* Filtreler */}
+        <Box sx={{ mb: 4, display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel>Konaklama Türü</InputLabel>
+            <Select
+              name="accommodationType"
+              value={filters.accommodationType}
+              onChange={handleFilterChange}
+              label="Konaklama Türü"
+            >
+              <MenuItem value="all">Tümü</MenuItem>
+              <MenuItem value="hotel">Otel</MenuItem>
+              <MenuItem value="villa">Villa</MenuItem>
+              <MenuItem value="bungalow">Bungalow</MenuItem>
+              <MenuItem value="treehouse">Treehouse</MenuItem>
+              <MenuItem value="house">Ev</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel>Oda Tipi</InputLabel>
+            <Select
+              name="roomType"
+              value={filters.roomType}
+              onChange={handleFilterChange}
+              label="Oda Tipi"
+            >
+              <MenuItem value="all">Tümü</MenuItem>
+              <MenuItem value="Standard">Standart Oda</MenuItem>
+              <MenuItem value="Deluxe">Deluxe Oda</MenuItem>
+              <MenuItem value="Suite">Suite Oda</MenuItem>
+              <MenuItem value="Villa">Villa</MenuItem>
+              <MenuItem value="Bungalow">Bungalow</MenuItem>
+              <MenuItem value="Treehouse">Treehouse</MenuItem>
+            </Select>
+          </FormControl>
+
+          <TextField
+            name="minPrice"
+            label="Min. Fiyat"
+            type="number"
+            value={filters.minPrice}
+            onChange={handleFilterChange}
+            sx={{ minWidth: 150 }}
+          />
+
+          <TextField
+            name="maxPrice"
+            label="Max. Fiyat"
+            type="number"
+            value={filters.maxPrice}
+            onChange={handleFilterChange}
+            sx={{ minWidth: 150 }}
+          />
+
+          <FormControl sx={{ minWidth: 200 }}>
+            <InputLabel>Min. Puan</InputLabel>
+            <Select
+              name="rating"
+              value={filters.rating}
+              onChange={handleFilterChange}
+              label="Min. Puan"
+            >
+              <MenuItem value="all">Tümü</MenuItem>
+              <MenuItem value="4">4+ Yıldız</MenuItem>
+              <MenuItem value="4.5">4.5+ Yıldız</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
+
+        <Grid container spacing={3}>
+          {filteredHotels.map((hotel) => (
+            <Grid item key={hotel.id} xs={12} sm={6} md={4}>
+              <HotelCard hotel={hotel} />
+            </Grid>
+          ))}
+        </Grid>
       </Container>
     </Box>
   );

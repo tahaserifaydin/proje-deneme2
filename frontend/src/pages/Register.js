@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
-  Container,
   Box,
   Paper,
   Typography,
@@ -9,40 +8,39 @@ import {
   Button,
   Link,
   Alert,
-  Grid,
   IconButton,
-  Divider,
-  Checkbox,
-  FormControlLabel,
+  Snackbar
 } from '@mui/material';
 import { 
-  PersonAdd,
-  Google as GoogleIcon, 
-  Facebook as FacebookIcon,
   Visibility, 
-  VisibilityOff 
+  VisibilityOff,
+  Google as GoogleIcon, 
+  Facebook as FacebookIcon
 } from '@mui/icons-material';
 import '../styles/AuthStyles.css';
-import logo from '../assets/logo.svg';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
-    username: '',
+    firstName: '',
+    lastName: '',
     email: '',
     password: '',
-    confirmPassword: '',
+    confirmPassword: ''
   });
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreeTerms, setAgreeTerms] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   const handleClickShowPassword = () => {
@@ -53,44 +51,45 @@ const Register = () => {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const handleAgreeTerms = (e) => {
-    setAgreeTerms(e.target.checked);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    // Form validasyonu
     if (formData.password !== formData.confirmPassword) {
       setError('Şifreler eşleşmiyor');
+      setSnackbarOpen(true);
       return;
     }
 
-    if (!agreeTerms) {
-      setError('Devam etmek için kullanım koşullarını kabul etmelisiniz');
+    if (formData.password.length < 6) {
+      setError('Şifre en az 6 karakter olmalıdır');
+      setSnackbarOpen(true);
       return;
     }
 
     try {
-      // TODO: Implement actual API call for registration
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        // Store token in localStorage
-        localStorage.setItem('token', data.token);
-        navigate('/');
-      } else {
-        setError('Kayıt başarısız. Lütfen bilgilerinizi kontrol edin.');
+      // Burada gerçek bir API çağrısı yapılacak
+      // Şimdilik mock data kullanıyoruz
+      if (formData.email === 'test@test.com') {
+        setError('Bu e-posta adresi zaten kullanımda');
+        setSnackbarOpen(true);
+        return;
       }
+
+      // Başarılı kayıt
+      login({ 
+        email: formData.email, 
+        name: `${formData.firstName} ${formData.lastName}` 
+      });
+      navigate('/');
     } catch (err) {
-      setError('Bir hata oluştu. Lütfen daha sonra tekrar deneyin.');
+      setError('Kayıt olurken bir hata oluştu');
+      setSnackbarOpen(true);
     }
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   return (
@@ -117,11 +116,24 @@ const Register = () => {
               className="auth-input"
               required
               fullWidth
-              id="username"
-              label="Kullanıcı Adı"
-              name="username"
-              autoComplete="username"
-              value={formData.username}
+              id="firstName"
+              label="Ad"
+              name="firstName"
+              autoComplete="given-name"
+              autoFocus
+              value={formData.firstName}
+              onChange={handleChange}
+              variant="outlined"
+            />
+            <TextField
+              className="auth-input"
+              required
+              fullWidth
+              id="lastName"
+              label="Soyad"
+              name="lastName"
+              autoComplete="family-name"
+              value={formData.lastName}
               onChange={handleChange}
               variant="outlined"
             />
@@ -169,7 +181,6 @@ const Register = () => {
               label="Şifre Tekrar"
               type={showConfirmPassword ? 'text' : 'password'}
               id="confirmPassword"
-              autoComplete="new-password"
               value={formData.confirmPassword}
               onChange={handleChange}
               variant="outlined"
@@ -185,33 +196,11 @@ const Register = () => {
                 ),
               }}
             />
-            
-            <FormControlLabel
-              control={
-                <Checkbox 
-                  checked={agreeTerms} 
-                  onChange={handleAgreeTerms} 
-                  color="primary" 
-                />
-              }
-              label={
-                <Typography variant="body2">
-                  <span>Kullanım koşullarını ve </span>
-                  <Link component={RouterLink} to="/privacy" className="auth-link" style={{ display: 'inline' }}>
-                    gizlilik politikasını
-                  </Link>
-                  <span> kabul ediyorum</span>
-                </Typography>
-              }
-              sx={{ mb: 2 }}
-            />
-            
             <Button
               type="submit"
               fullWidth
               variant="contained"
               className="auth-button"
-              disabled={!agreeTerms}
             >
               Üye Ol
             </Button>
@@ -224,14 +213,14 @@ const Register = () => {
                 className="social-button google-button"
                 startIcon={<GoogleIcon />}
               >
-                Google ile Üye Ol
+                Google
               </Button>
               <Button
                 variant="contained"
                 className="social-button facebook-button"
                 startIcon={<FacebookIcon />}
               >
-                Facebook ile Üye Ol
+                Facebook
               </Button>
             </Box>
             
@@ -243,6 +232,17 @@ const Register = () => {
           </form>
         </Box>
       </Paper>
+
+      <Snackbar 
+        open={snackbarOpen} 
+        autoHideDuration={3000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="error" sx={{ width: '100%' }}>
+          {error}
+        </Alert>
+      </Snackbar>
     </div>
   );
 };
