@@ -70,6 +70,38 @@ const Navbar = () => {
             Oteller
           </Button>
 
+          <Button
+            component={RouterLink}
+            to="/login"
+            color="inherit"
+            variant="outlined"
+            sx={{
+              borderColor: 'white',
+              borderRadius: '8px',
+              fontWeight: 'bold',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                borderColor: 'white'
+              }
+            }}
+          >
+            Giriş Yap
+          </Button>
+
+          <Button
+            component={RouterLink}
+            to="/register"
+            color="inherit"
+            sx={{
+              fontWeight: 'bold',
+              '&:hover': {
+                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              }
+            }}
+          >
+            Üye Ol
+          </Button>
+
           <IconButton
             component={RouterLink}
             to="/favorites"
@@ -90,14 +122,14 @@ const Navbar = () => {
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-            <MenuItem component={RouterLink} to="/login" onClick={handleClose}>
-              Giriş Yap
-            </MenuItem>
-            <MenuItem component={RouterLink} to="/register" onClick={handleClose}>
-              Üye Ol
-            </MenuItem>
             <MenuItem component={RouterLink} to="/profile" onClick={handleClose}>
               Profilim
+            </MenuItem>
+            <MenuItem component={RouterLink} to="/bookings" onClick={handleClose}>
+              Rezervasyonlarım
+            </MenuItem>
+            <MenuItem onClick={handleClose}>
+              Çıkış Yap
             </MenuItem>
           </Menu>
         </Box>

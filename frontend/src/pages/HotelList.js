@@ -73,120 +73,125 @@ const HotelList = () => {
   };
 
   return (
-    <Container sx={{ py: 4 }}>
-      <Grid container spacing={3}>
+    <Container className="container">
+      <Grid container className="grid-container" spacing={3}>
         {/* Filters Section */}
-        <Grid item xs={12} md={3}>
-          <Card sx={{ p: 2, mb: 2 }}>
-            <Typography variant="h6" gutterBottom>
+        <Grid item xs={12} md={3} className="filters-section">
+          <Card className="card">
+            <Typography variant="h6" gutterBottom className="title">
               Filtreler
             </Typography>
 
-            <Box sx={{ mb: 3 }}>
-              <Typography gutterBottom>Fiyat Aralığı (₺)</Typography>
+            <Box className="box">
+              <Typography gutterBottom className="label">Fiyat Aralığı (₺)</Typography>
               <Slider
                 value={filters.priceRange}
                 onChange={(_, value) => handleFilterChange('priceRange', value)}
                 valueLabelDisplay="auto"
                 min={0}
                 max={5000}
+                className="slider"
               />
             </Box>
 
-            <Box sx={{ mb: 3 }}>
-              <Typography gutterBottom>Yıldız Sayısı</Typography>
+            <Box className="box">
+              <Typography gutterBottom className="label">Yıldız Sayısı</Typography>
               <Rating
                 value={filters.stars}
                 onChange={(_, value) => handleFilterChange('stars', value)}
+                className="rating"
               />
             </Box>
 
-            <FormControl fullWidth sx={{ mb: 3 }}>
-              <InputLabel>Konaklama Tipi</InputLabel>
+            <FormControl fullWidth className="form-control">
+              <InputLabel className="input-label">Konaklama Tipi</InputLabel>
               <Select
                 value={filters.type}
                 onChange={(e) => handleFilterChange('type', e.target.value)}
+                className="select"
               >
-                <MenuItem value="all">Tümü</MenuItem>
-                <MenuItem value="hotel">Otel</MenuItem>
-                <MenuItem value="resort">Resort</MenuItem>
-                <MenuItem value="villa">Villa</MenuItem>
-                <MenuItem value="apartment">Apart</MenuItem>
+                <MenuItem value="all" className="menu-item">Tümü</MenuItem>
+                <MenuItem value="hotel" className="menu-item">Otel</MenuItem>
+                <MenuItem value="resort" className="menu-item">Resort</MenuItem>
+                <MenuItem value="villa" className="menu-item">Villa</MenuItem>
+                <MenuItem value="apartment" className="menu-item">Apart</MenuItem>
               </Select>
             </FormControl>
           </Card>
         </Grid>
 
         {/* Hotels List Section */}
-        <Grid item xs={12} md={9}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-            <Typography variant="h5">
+        <Grid item xs={12} md={9} className="hotels-list-section">
+          <Box className="box">
+            <Typography variant="h5" className="title">
               {hotels.length} sonuç bulundu
             </Typography>
 
-            <FormControl sx={{ minWidth: 200 }}>
-              <InputLabel>Sırala</InputLabel>
+            <FormControl className="form-control">
+              <InputLabel className="input-label">Sırala</InputLabel>
               <Select
                 value={sortBy}
                 onChange={handleSortChange}
-                startAdornment={<Sort />}
+                startAdornment={<Sort className="sort-icon" />}
+                className="select"
               >
-                <MenuItem value="recommended">Önerilen</MenuItem>
-                <MenuItem value="price_asc">Fiyat (Düşükten Yükseğe)</MenuItem>
-                <MenuItem value="price_desc">Fiyat (Yüksekten Düşüğe)</MenuItem>
-                <MenuItem value="rating">En Çok Beğenilen</MenuItem>
-                <MenuItem value="name_asc">İsim (A-Z)</MenuItem>
+                <MenuItem value="recommended" className="menu-item">Önerilen</MenuItem>
+                <MenuItem value="price_asc" className="menu-item">Fiyat (Düşükten Yükseğe)</MenuItem>
+                <MenuItem value="price_desc" className="menu-item">Fiyat (Yüksekten Düşüğe)</MenuItem>
+                <MenuItem value="rating" className="menu-item">En Çok Beğenilen</MenuItem>
+                <MenuItem value="name_asc" className="menu-item">İsim (A-Z)</MenuItem>
               </Select>
             </FormControl>
           </Box>
 
-          <Grid container spacing={4}>
+          <Grid container className="hotel-grid">
             {hotels.map((hotel) => (
-              <Grid item xs={12} sm={6} md={4} key={hotel.id}>
-                <Card>
+              <Grid item xs={12} sm={6} md={4} key={hotel.id} className="hotel-grid-item">
+                <Card className="card">
                   <CardMedia
                     component="img"
                     height="200"
                     image={hotel.image}
                     alt={hotel.name}
-                    sx={{ cursor: 'pointer' }}
+                    className="hotel-image"
                     onClick={() => navigate(`/hotels/${hotel.id}`)}
                   />
-                  <CardContent>
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                      <Typography variant="h6" gutterBottom>
+                  <CardContent className="card-content">
+                    <Box className="box">
+                      <Typography variant="h6" gutterBottom className="title">
                         {hotel.name}
                       </Typography>
                       <IconButton
                         onClick={() => handleFavoriteToggle(hotel.id)}
                         color="primary"
+                        className="favorite-button"
                       >
-                        {hotel.isFavorite ? <Favorite /> : <FavoriteBorder />}
+                        {hotel.isFavorite ? <Favorite className="favorite-icon" /> : <FavoriteBorder className="favorite-icon" />}
                       </IconButton>
                     </Box>
 
-                    <Typography color="text.secondary" gutterBottom>
+                    <Typography color="text.secondary" gutterBottom className="label">
                       {hotel.location}
                     </Typography>
 
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <Rating value={hotel.rating} precision={0.5} readOnly size="small" />
-                      <Typography variant="body2" sx={{ ml: 1 }}>
+                    <Box className="box">
+                      <Rating value={hotel.rating} precision={0.5} readOnly size="small" className="rating" />
+                      <Typography variant="body2" className="label">
                         ({hotel.reviews} değerlendirme)
                       </Typography>
                     </Box>
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="h6" color="primary">
+                    <Box className="box">
+                      <Typography variant="h6" color="primary" className="price">
                         ₺{hotel.price}
                       </Typography>
-                      <Chip label={`${hotel.stars} Yıldızlı`} size="small" />
+                      <Chip label={`${hotel.stars} Yıldızlı`} size="small" className="chip" />
                     </Box>
 
                     <Button
                       fullWidth
                       variant="contained"
-                      sx={{ mt: 2 }}
+                      className="button"
                       onClick={() => navigate(`/hotels/${hotel.id}`)}
                     >
                       Detayları Gör

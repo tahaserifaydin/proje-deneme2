@@ -6,6 +6,8 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import theme from './theme';
 import './styles/App.css';
+import './styles/HotelStyles.css';
+import './styles/AuthStyles.css';
 
 // Components
 import Navbar from './components/Navbar';
@@ -20,6 +22,7 @@ import HotelDetail from './pages/HotelDetail';
 import Favorites from './pages/Favorites';
 import Booking from './pages/Booking';
 import Profile from './pages/Profile';
+import SearchResults from './pages/SearchResults';
 
 function App() {
   return (
@@ -39,6 +42,7 @@ function App() {
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/booking/:hotelId" element={<Booking />} />
                 <Route path="/profile" element={<Profile />} />
+                <Route path="/search-results" element={<SearchResults />} />
               </Routes>
             </main>
             <Footer />

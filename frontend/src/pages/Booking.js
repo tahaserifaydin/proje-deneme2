@@ -23,6 +23,9 @@ import {
 import {
   CreditCard,
   AccountBalance,
+  Payment,
+  CreditScore,
+  Money,
 } from '@mui/icons-material';
 
 const steps = ['Rezervasyon Detayları', 'Ödeme Yöntemi', 'Onay'];
@@ -45,7 +48,9 @@ const Booking = () => {
     cardNumber: '',
     cardExpiry: '',
     cardCVC: '',
+    cardHolderName: '',
     bankTransferInfo: '',
+    installmentCount: '',
   });
 
   useEffect(() => {
@@ -188,93 +193,243 @@ const Booking = () => {
         return (
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <FormControl component="fieldset">
+              <Typography variant="h6" gutterBottom>
+                Ödeme Bilgileri
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Lütfen tercih ettiğiniz ödeme yöntemini seçin
+              </Typography>
+            </Grid>
+            <Grid item xs={12}>
+              <FormControl component="fieldset" fullWidth>
                 <FormLabel component="legend">Ödeme Yöntemi</FormLabel>
                 <RadioGroup
                   name="paymentMethod"
                   value={bookingDetails.paymentMethod}
                   onChange={handleInputChange}
                 >
-                  <FormControlLabel
-                    value="credit_card"
-                    control={<Radio />}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <CreditCard sx={{ mr: 1 }} />
-                        Kredi Kartı
-                      </Box>
-                    }
-                  />
-                  <FormControlLabel
-                    value="bank_transfer"
-                    control={<Radio />}
-                    label={
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AccountBalance sx={{ mr: 1 }} />
-                        Banka Havalesi
-                      </Box>
-                    }
-                  />
+                  <Grid container spacing={2} sx={{ mt: 1 }}>
+                    <Grid item xs={12} md={6}>
+                      <Paper 
+                        elevation={bookingDetails.paymentMethod === 'credit_card' ? 3 : 1} 
+                        sx={{ 
+                          p: 2, 
+                          border: bookingDetails.paymentMethod === 'credit_card' ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                          borderRadius: 2,
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <FormControlLabel
+                          value="credit_card"
+                          control={<Radio />}
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <CreditCard sx={{ mr: 1, color: '#1976d2' }} />
+                              <Typography variant="subtitle1">Kredi Kartı</Typography>
+                            </Box>
+                          }
+                          sx={{ width: '100%' }}
+                        />
+                        {bookingDetails.paymentMethod === 'credit_card' && (
+                          <Box sx={{ mt: 2, pl: 4 }}>
+                            <Grid container spacing={2}>
+                              <Grid item xs={12}>
+                                <TextField
+                                  fullWidth
+                                  label="Kart Üzerindeki İsim"
+                                  name="cardHolderName"
+                                  value={bookingDetails.cardHolderName}
+                                  onChange={handleInputChange}
+                                  required
+                                  variant="outlined"
+                                  size="small"
+                                />
+                              </Grid>
+                              <Grid item xs={12}>
+                                <TextField
+                                  fullWidth
+                                  label="Kart Numarası"
+                                  name="cardNumber"
+                                  value={bookingDetails.cardNumber}
+                                  onChange={handleInputChange}
+                                  required
+                                  variant="outlined"
+                                  size="small"
+                                  placeholder="1234 5678 9012 3456"
+                                  inputProps={{ maxLength: 19 }}
+                                />
+                              </Grid>
+                              <Grid item xs={6}>
+                                <TextField
+                                  fullWidth
+                                  label="Son Kullanma Tarihi"
+                                  name="cardExpiry"
+                                  placeholder="AA/YY"
+                                  value={bookingDetails.cardExpiry}
+                                  onChange={handleInputChange}
+                                  required
+                                  variant="outlined"
+                                  size="small"
+                                  inputProps={{ maxLength: 5 }}
+                                />
+                              </Grid>
+                              <Grid item xs={6}>
+                                <TextField
+                                  fullWidth
+                                  label="CVC"
+                                  name="cardCVC"
+                                  value={bookingDetails.cardCVC}
+                                  onChange={handleInputChange}
+                                  required
+                                  variant="outlined"
+                                  size="small"
+                                  inputProps={{ maxLength: 3 }}
+                                />
+                              </Grid>
+                            </Grid>
+                          </Box>
+                        )}
+                      </Paper>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <Paper 
+                        elevation={bookingDetails.paymentMethod === 'bank_transfer' ? 3 : 1} 
+                        sx={{ 
+                          p: 2, 
+                          border: bookingDetails.paymentMethod === 'bank_transfer' ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                          borderRadius: 2,
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <FormControlLabel
+                          value="bank_transfer"
+                          control={<Radio />}
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <AccountBalance sx={{ mr: 1, color: '#1976d2' }} />
+                              <Typography variant="subtitle1">Banka Havalesi</Typography>
+                            </Box>
+                          }
+                          sx={{ width: '100%' }}
+                        />
+                        {bookingDetails.paymentMethod === 'bank_transfer' && (
+                          <Box sx={{ mt: 2, pl: 4 }}>
+                            <Card variant="outlined" sx={{ bgcolor: '#f5f5f5' }}>
+                              <CardContent>
+                                <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+                                  Banka Hesap Bilgileri
+                                </Typography>
+                                <Typography variant="body2">
+                                  Banka: TATİLİM Bank
+                                </Typography>
+                                <Typography variant="body2">
+                                  IBAN: TR00 0000 0000 0000 0000 0000 00
+                                </Typography>
+                                <Typography variant="body2">
+                                  Hesap Sahibi: TATİLİM Turizm A.Ş.
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                                  * Havale açıklamasına rezervasyon numaranızı yazmayı unutmayın.
+                                </Typography>
+                              </CardContent>
+                            </Card>
+                          </Box>
+                        )}
+                      </Paper>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <Paper 
+                        elevation={bookingDetails.paymentMethod === 'pay_at_hotel' ? 3 : 1} 
+                        sx={{ 
+                          p: 2, 
+                          border: bookingDetails.paymentMethod === 'pay_at_hotel' ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                          borderRadius: 2,
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <FormControlLabel
+                          value="pay_at_hotel"
+                          control={<Radio />}
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <Money sx={{ mr: 1, color: '#1976d2' }} />
+                              <Typography variant="subtitle1">Otelde Ödeme</Typography>
+                            </Box>
+                          }
+                          sx={{ width: '100%' }}
+                        />
+                        {bookingDetails.paymentMethod === 'pay_at_hotel' && (
+                          <Box sx={{ mt: 2, pl: 4 }}>
+                            <Typography variant="body2" color="text.secondary">
+                              Ödemenizi otele giriş sırasında nakit veya kredi kartı ile yapabilirsiniz.
+                            </Typography>
+                            <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                              * Yüksek sezon dönemlerinde bu ödeme yöntemi için sınırlı kontenjan bulunmaktadır.
+                            </Typography>
+                          </Box>
+                        )}
+                      </Paper>
+                    </Grid>
+                    
+                    <Grid item xs={12} md={6}>
+                      <Paper 
+                        elevation={bookingDetails.paymentMethod === 'installment' ? 3 : 1} 
+                        sx={{ 
+                          p: 2, 
+                          border: bookingDetails.paymentMethod === 'installment' ? '2px solid #1976d2' : '1px solid #e0e0e0',
+                          borderRadius: 2,
+                          transition: 'all 0.3s ease'
+                        }}
+                      >
+                        <FormControlLabel
+                          value="installment"
+                          control={<Radio />}
+                          label={
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                              <CreditScore sx={{ mr: 1, color: '#1976d2' }} />
+                              <Typography variant="subtitle1">Taksitli Ödeme</Typography>
+                            </Box>
+                          }
+                          sx={{ width: '100%' }}
+                        />
+                        {bookingDetails.paymentMethod === 'installment' && (
+                          <Box sx={{ mt: 2, pl: 4 }}>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                              Anlaşmalı bankalarla 3, 6 veya 9 taksit seçenekleri mevcuttur.
+                            </Typography>
+                            <FormControl fullWidth size="small" sx={{ mt: 1 }}>
+                              <FormLabel component="legend">Taksit Sayısı</FormLabel>
+                              <RadioGroup
+                                row
+                                name="installmentCount"
+                                defaultValue="3"
+                              >
+                                <FormControlLabel value="3" control={<Radio size="small" />} label="3 Taksit" />
+                                <FormControlLabel value="6" control={<Radio size="small" />} label="6 Taksit" />
+                                <FormControlLabel value="9" control={<Radio size="small" />} label="9 Taksit" />
+                              </RadioGroup>
+                            </FormControl>
+                            <TextField
+                              fullWidth
+                              label="Kart Numarası"
+                              name="cardNumber"
+                              value={bookingDetails.cardNumber}
+                              onChange={handleInputChange}
+                              required
+                              variant="outlined"
+                              size="small"
+                              sx={{ mt: 1 }}
+                            />
+                          </Box>
+                        )}
+                      </Paper>
+                    </Grid>
+                  </Grid>
                 </RadioGroup>
               </FormControl>
             </Grid>
-
-            {bookingDetails.paymentMethod === 'credit_card' && (
-              <>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    label="Kart Numarası"
-                    name="cardNumber"
-                    value={bookingDetails.cardNumber}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Son Kullanma Tarihi"
-                    name="cardExpiry"
-                    placeholder="MM/YY"
-                    value={bookingDetails.cardExpiry}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    fullWidth
-                    label="CVC"
-                    name="cardCVC"
-                    value={bookingDetails.cardCVC}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Grid>
-              </>
-            )}
-
-            {bookingDetails.paymentMethod === 'bank_transfer' && (
-              <Grid item xs={12}>
-                <Card>
-                  <CardContent>
-                    <Typography variant="h6" gutterBottom>
-                      Banka Hesap Bilgileri
-                    </Typography>
-                    <Typography variant="body1">
-                      Banka: TATİLİM Bank
-                    </Typography>
-                    <Typography variant="body1">
-                      IBAN: TR00 0000 0000 0000 0000 0000 00
-                    </Typography>
-                    <Typography variant="body1">
-                      Hesap Sahibi: TATİLİM Turizm A.Ş.
-                    </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            )}
           </Grid>
         );
 
@@ -334,7 +489,13 @@ const Booking = () => {
                     </Grid>
                     <Grid item xs={6}>
                       <Typography variant="body1">
-                        {bookingDetails.paymentMethod === 'credit_card' ? 'Kredi Kartı' : 'Banka Havalesi'}
+                        {bookingDetails.paymentMethod === 'credit_card' 
+                          ? 'Kredi Kartı' 
+                          : bookingDetails.paymentMethod === 'bank_transfer'
+                          ? 'Banka Havalesi'
+                          : bookingDetails.paymentMethod === 'pay_at_hotel'
+                          ? 'Otelde Ödeme'
+                          : 'Taksitli Ödeme'}
                       </Typography>
                     </Grid>
 
