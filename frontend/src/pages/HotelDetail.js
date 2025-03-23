@@ -31,7 +31,10 @@ import {
   Dialog,
   DialogContent,
   DialogTitle,
-  IconButton as MuiIconButton
+  DialogActions,
+  IconButton as MuiIconButton,
+  Avatar,
+  ListItemAvatar
 } from '@mui/material';
 import {
   Favorite,
@@ -55,7 +58,8 @@ import {
   Chair,
   Bed,
   Close,
-  PhotoLibrary
+  PhotoLibrary,
+  CreditCard
 } from '@mui/icons-material';
 import {
   DatePicker
@@ -72,6 +76,9 @@ import { hotels } from '../data/hotels';
 import ImageGallery from 'react-image-gallery';
 import 'react-image-gallery/styles/css/image-gallery.css';
 import roomImages from '../data/roomImages';
+import { useAuth } from '../contexts/AuthContext';
+import { format } from 'date-fns';
+import { tr } from 'date-fns/locale';
 
 dayjs.locale('tr');
 
@@ -79,6 +86,7 @@ const HotelDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isAuthenticated, user } = useAuth();
   const [hotel, setHotel] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isFavorite, setIsFavorite] = useState(false);
@@ -95,6 +103,11 @@ const HotelDetail = () => {
   const [openGallery, setOpenGallery] = useState(false);
   const [selectedRoomImages, setSelectedRoomImages] = useState([]);
   const [galleryTitle, setGalleryTitle] = useState('');
+  const [comment, setComment] = useState('');
+  const [rating, setRating] = useState(5);
+  const [openCommentDialog, setOpenCommentDialog] = useState(false);
+  const [comments, setComments] = useState([]);
+  const [hasReservation, setHasReservation] = useState(false);
 
   useEffect(() => {
     // Otel verilerini hotels.js dosyasından al
@@ -113,7 +126,13 @@ const HotelDetail = () => {
     setTimeout(() => {
       setLoading(false);
     }, 800);
-  }, [id]);
+
+    // Kullanıcının bu otelde rezervasyonu var mı kontrol et
+    // Bu kısım normalde API'den gelecek
+    if (isAuthenticated) {
+      setHasReservation(true); // Örnek olarak true yapıyoruz
+    }
+  }, [id, isAuthenticated]);
 
   const handleFavoriteToggle = () => {
     const newFavoriteStatus = !isFavorite;
@@ -235,6 +254,26 @@ const HotelDetail = () => {
 
   const handleCloseGallery = () => {
     setOpenGallery(false);
+  };
+
+  const handleCommentSubmit = () => {
+    if (!comment.trim()) return;
+
+    const newComment = {
+      id: comments.length + 1,
+      user: {
+        name: user.name,
+        avatar: user.avatar || `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`
+      },
+      rating,
+      comment,
+      date: new Date().toISOString().split('T')[0]
+    };
+
+    setComments([newComment, ...comments]);
+    setComment('');
+    setRating(5);
+    setOpenCommentDialog(false);
   };
 
   if (loading) {
@@ -469,6 +508,63 @@ const HotelDetail = () => {
               ))}
             </Grid>
           </Box>
+
+          {/* Yorumlar Bölümü */}
+          <Box sx={{ mt: 4 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+              <Typography variant="h6">Değerlendirmeler</Typography>
+              {isAuthenticated && hasReservation && (
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => setOpenCommentDialog(true)}
+                >
+                  Yorum Yap
+                </Button>
+              )}
+            </Box>
+            <List>
+              {comments.map((comment) => (
+                <React.Fragment key={comment.id}>
+                  <ListItem alignItems="flex-start">
+                    <ListItemAvatar>
+                      <Avatar src={comment.user.avatar} alt={comment.user.name} />
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Typography component="span" variant="subtitle1">
+                            {comment.user.name}
+                          </Typography>
+                          <Rating value={comment.rating} size="small" readOnly />
+                        </Box>
+                      }
+                      secondary={
+                        <>
+                          <Typography
+                            component="span"
+                            variant="body2"
+                            color="text.primary"
+                            sx={{ display: 'block', mb: 1 }}
+                          >
+                            {comment.comment}
+                          </Typography>
+                          <Typography
+                            component="span"
+                            variant="caption"
+                            color="text.secondary"
+                          >
+                            {format(new Date(comment.date), 'd MMMM yyyy', { locale: tr })}
+                          </Typography>
+                        </>
+                      }
+                    />
+                  </ListItem>
+                  <Divider variant="inset" component="li" />
+                </React.Fragment>
+              ))}
+            </List>
+          </Box>
         </Grid>
 
         {/* Sağ Sütun - Rezervasyon Kartı */}
@@ -648,6 +744,43 @@ const HotelDetail = () => {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {/* Yorum Yapma Dialog'u */}
+      <Dialog open={openCommentDialog} onClose={() => setOpenCommentDialog(false)}>
+        <DialogTitle>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            Yorum Yap
+            <MuiIconButton onClick={() => setOpenCommentDialog(false)} size="small">
+              <Close />
+            </MuiIconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent>
+          <Box sx={{ mt: 2 }}>
+            <Typography component="legend">Puanınız</Typography>
+            <Rating
+              value={rating}
+              onChange={(event, newValue) => setRating(newValue)}
+              size="large"
+            />
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Yorumunuz"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenCommentDialog(false)}>İptal</Button>
+          <Button onClick={handleCommentSubmit} variant="contained" color="primary">
+            Gönder
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

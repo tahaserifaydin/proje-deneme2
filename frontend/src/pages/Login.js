@@ -57,18 +57,19 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Burada gerçek bir API çağrısı yapılacak
-      // Şimdilik mock data kullanıyoruz
-      if (formData.email === 'test@test.com' && formData.password === 'test123') {
-        login({ email: formData.email, name: 'Test User' });
-        navigate('/');
-      } else {
-        setError('Geçersiz e-posta veya şifre');
-        setSnackbarOpen(true);
-      }
-    } catch (err) {
-      setError('Giriş yapılırken bir hata oluştu');
-      setSnackbarOpen(true);
+      // API çağrısı yerine mock veri kullanıyoruz
+      const mockUser = {
+        id: 1,
+        name: formData.email.split('@')[0], // Email'den kullanıcı adı oluştur
+        email: formData.email,
+        avatar: `https://i.pravatar.cc/150?img=${Math.floor(Math.random() * 70)}`,
+        createdAt: new Date().toISOString()
+      };
+
+      login(mockUser);
+      navigate('/');
+    } catch (error) {
+      setError('Giriş yapılırken bir hata oluştu.');
     }
   };
 

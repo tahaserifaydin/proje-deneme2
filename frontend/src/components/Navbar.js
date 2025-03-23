@@ -1,25 +1,24 @@
 import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import {
   AppBar,
   Toolbar,
   Typography,
   Button,
+  Box,
   IconButton,
   Menu,
   MenuItem,
-  Box,
-  Select,
+  Avatar,
+  Link
 } from '@mui/material';
-import {
-  AccountCircle,
-  Favorite,
-  Language,
-} from '@mui/icons-material';
+import { AccountCircle, Language } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, user, logout } = useAuth();
   const [anchorEl, setAnchorEl] = useState(null);
-  const [language, setLanguage] = useState('tr');
 
   const handleMenu = (event) => {
     setAnchorEl(event.currentTarget);
@@ -29,13 +28,19 @@ const Navbar = () => {
     setAnchorEl(null);
   };
 
-  const handleLanguageChange = (event) => {
-    setLanguage(event.target.value);
-    // TODO: Implement language change functionality
+  const handleLogout = () => {
+    logout();
+    handleClose();
+    navigate('/');
+  };
+
+  const handleMyReservations = () => {
+    handleClose();
+    navigate('/my-reservations');
   };
 
   return (
-    <AppBar position="static">
+    <AppBar position="static" color="default" elevation={1}>
       <Toolbar>
         <Typography
           variant="h6"
@@ -48,91 +53,59 @@ const Navbar = () => {
             fontWeight: 'bold'
           }}
         >
-          TATİLİM
+          Tatilim
         </Typography>
 
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Select
-            value={language}
-            onChange={handleLanguageChange}
-            size="small"
-            sx={{ color: 'white', '& .MuiSelect-icon': { color: 'white' } }}
-          >
-            <MenuItem value="tr">TR</MenuItem>
-            <MenuItem value="en">EN</MenuItem>
-          </Select>
-
-          <Button
-            component={RouterLink}
-            to="/hotels"
-            color="inherit"
-          >
-            Oteller
-          </Button>
-
-          <Button
-            component={RouterLink}
-            to="/login"
-            color="inherit"
-            variant="outlined"
-            sx={{
-              borderColor: 'white',
-              borderRadius: '8px',
-              fontWeight: 'bold',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                borderColor: 'white'
-              }
-            }}
-          >
-            Giriş Yap
-          </Button>
-
-          <Button
-            component={RouterLink}
-            to="/register"
-            color="inherit"
-            sx={{
-              fontWeight: 'bold',
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              }
-            }}
-          >
-            Üye Ol
-          </Button>
-
-          <IconButton
-            component={RouterLink}
-            to="/favorites"
-            color="inherit"
-          >
-            <Favorite />
-          </IconButton>
-
-          <IconButton
-            onClick={handleMenu}
-            color="inherit"
-          >
-            <AccountCircle />
-          </IconButton>
-          
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem component={RouterLink} to="/profile" onClick={handleClose}>
-              Profilim
-            </MenuItem>
-            <MenuItem component={RouterLink} to="/bookings" onClick={handleClose}>
+        {isAuthenticated ? (
+          <>
+            <Button
+              color="inherit"
+              component={RouterLink}
+              to="/my-reservations"
+              sx={{ mr: 2 }}
+            >
               Rezervasyonlarım
-            </MenuItem>
-            <MenuItem onClick={handleClose}>
-              Çıkış Yap
-            </MenuItem>
-          </Menu>
-        </Box>
+            </Button>
+            <IconButton
+              onClick={handleMenu}
+              size="large"
+              edge="end"
+              color="inherit"
+            >
+              <Avatar
+                src={user?.avatar}
+                alt={user?.name}
+                sx={{ width: 32, height: 32 }}
+              />
+            </IconButton>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleMyReservations}>Rezervasyonlarım</MenuItem>
+              <MenuItem onClick={handleLogout}>Çıkış Yap</MenuItem>
+            </Menu>
+          </>
+        ) : (
+          <Box>
+            <Button
+              color="inherit"
+              component={RouterLink}
+              to="/login"
+              sx={{ mr: 1 }}
+            >
+              Giriş Yap
+            </Button>
+            <Button
+              color="inherit"
+              component={RouterLink}
+              to="/register"
+            >
+              Üye Ol
+            </Button>
+          </Box>
+        )}
       </Toolbar>
     </AppBar>
   );

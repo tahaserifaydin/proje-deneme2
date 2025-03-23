@@ -8,8 +8,16 @@ export const AuthProvider = ({ children }) => {
   const [favorites, setFavorites] = useState([]);
 
   useEffect(() => {
-    // Sayfa yüklendiğinde localStorage'dan favorileri al
+    // Sayfa yüklendiğinde localStorage'dan kullanıcı bilgilerini ve favorileri al
+    const savedUser = localStorage.getItem('user');
     const savedFavorites = localStorage.getItem('favorites');
+    
+    if (savedUser) {
+      const userData = JSON.parse(savedUser);
+      setUser(userData);
+      setIsAuthenticated(true);
+    }
+    
     if (savedFavorites) {
       setFavorites(JSON.parse(savedFavorites));
     }
@@ -18,11 +26,15 @@ export const AuthProvider = ({ children }) => {
   const login = (userData) => {
     setIsAuthenticated(true);
     setUser(userData);
+    // Kullanıcı bilgilerini localStorage'a kaydet
+    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const logout = () => {
     setIsAuthenticated(false);
     setUser(null);
+    // Kullanıcı bilgilerini localStorage'dan sil
+    localStorage.removeItem('user');
   };
 
   const toggleFavorite = (hotel) => {

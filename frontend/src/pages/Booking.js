@@ -111,10 +111,28 @@ const Booking = () => {
     }));
   };
 
-  const handleSubmit = () => {
-    // TODO: Implement actual booking submission
-    console.log('Booking submitted:', { hotelId: hotel.id, ...bookingDetails });
-    navigate('/booking-confirmation');
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Rezervasyon bilgilerini localStorage'a kaydet
+    const reservations = JSON.parse(localStorage.getItem('reservations') || '[]');
+    const newReservation = {
+      id: Date.now(),
+      hotelId: location.state.hotelId,
+      hotelName: location.state.hotelName,
+      checkIn: bookingDetails.checkIn,
+      checkOut: bookingDetails.checkOut,
+      guests: bookingDetails.guests,
+      totalPrice: location.state.price * bookingDetails.guests,
+      status: 'active',
+      createdAt: new Date().toISOString()
+    };
+    reservations.push(newReservation);
+    localStorage.setItem('reservations', JSON.stringify(reservations));
+    
+    // Rezervasyon onay sayfasına yönlendir
+    navigate('/booking-confirmation', {
+      state: { reservation: newReservation }
+    });
   };
 
   const handleCloseSnackbar = () => {
