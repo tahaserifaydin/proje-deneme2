@@ -38,7 +38,7 @@ const HotelCard = ({ hotel, onInteraction }) => {
 
   return (
     <>
-      <Card sx={{ display: 'flex', mb: 2, height: 200 }}>
+      <Card sx={{ display: 'flex', mb: 4, height: 200 }}>
         <CardMedia
           component="img"
           sx={{ width: 300 }}
